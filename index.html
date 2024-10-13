@@ -1,1 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tone.jsのサンプル</title>
+    <!-- <meta name="description" content="これは私のウェブサイトの説明です。"> -->
+    <!-- <link rel="stylesheet" href="styles.css"> -->
+    <!-- <link rel="icon" href="favicon.ico"> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.2/Tone.min.js"></script>
+</head>
+
+
+<body>
+
+    <script>
+        const testURL = 'https://drive.google.com/uc?id=1SDQv_k8WW09pLF3IKbnJJ_xNilmHJ9r3';
+
+        // MIDIファイルを読み込む
+        const audioContext = new AudioContext();
+        const request = new XMLHttpRequest();
+        request.open('GET', testURL, true);
+        request.responseType = 'arraybuffer';
+
+        request.onload = () => {
+            audioContext.decodeAudioData(request.response, (buffer) => {
+                // MIDIデータをパース
+                const midi = new Tone.Midi(buffer);
+
+                // シンセサイザーを生成
+                const synth = new Tone.Synth().toDestination();
+
+                // MIDIデータに基づいて演奏
+                midi.tracks.forEach((track) => {
+                    track.notes.forEach((note) => {
+                        synth.triggerAttackRelease(note.name, note.duration, note.time);
+                    });
+                });
+            }, (error) => {
+                console.error('MIDIファイルのデコードに失敗しました:', error);
+                alert('MIDIファイルの再生に失敗しました。\nファイルの形式が正しくないか、ネットワークに問題がある可能性があります。');
+            });
+        };
+
+        request.onerror = () => {
+            console.error('MIDIファイルの読み込みに失敗しました:', request.statusText);
+            alert('MIDIファイルを読み込めませんでした。\nネットワークに問題がある可能性があります。');
+        };
+
+        request.send();
+    </script>
+</body>
+
+</html>
